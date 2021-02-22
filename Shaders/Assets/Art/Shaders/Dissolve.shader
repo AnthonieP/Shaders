@@ -223,7 +223,7 @@
 					float rim = 1 - saturate(dot(normalize(viewDirection), normalDirection));
 					float3 rimLighting = atten * _LightColor0.xyz * _RimCol * saturate(dot(normalDirection, lightDirection)) * pow(rim, _RimPow);
 
-					float3 lightFinal = rimLighting + diffuseReflection + specularReflection + UNITY_LIGHTMODEL_AMBIENT.rgb;
+					float3 lightFinal = rimLighting + diffuseReflection + specularReflection;
 					col = half4(lightFinal.xyz, 1);
 
 					fixed4 finalCol = col * shadowAtten;
