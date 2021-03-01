@@ -14,7 +14,7 @@
 
 			Pass
 			{
-				Tags {"LightMode" = "ForwardBase" }
+				Tags {"LightMode" = "ForwardBase"}
 				Blend SrcAlpha OneMinusSrcAlpha
 				ZWrite Off
 				LOD 100

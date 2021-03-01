@@ -8,16 +8,25 @@
 		_ShineCol("Shine Color", Color) = (1,1,1,1)
 		_RimPow("Rim", float) = 1
 		_RimCol("Rim Color", Color) = (1,1,1,1)
+
+		//Reflective
 		_ReflectiveTex("Reflective Texture", 2D) = "defaulttexture" {}
 		_ReflectiveCol("Reflective Color", Color) = (1,1,1,1)
 		_ReflectiveMinAngle("Reflective Angle Min", Vector) = (0,0,0,0)
 		_ReflectiveMaxAngle("Reflective Angle Max", Vector) = (0,0,0,0)
+
+		//UV Light
+		_UVTexture("UV Texture", 2D) = "defaulttexture" {}
+		[HDR] _UVColor("UV Color", Color) = (1,1,1,1)
+		_UVLightColor("UV Light Color", Color) = (1,1,1,1)
 	}
 		SubShader
 		{
-
+			
+			//Light Base
 			Pass
 			{
+				Name "Light Base"
 				Tags {"LightMode" = "ForwardBase" }
 				LOD 100
 				CGPROGRAM
@@ -111,8 +120,10 @@
 				ENDCG
 			}
 
+			//Light Add
 			Pass
 			{
+				Name "LightAdd"
 				Tags {"LightMode" = "ForwardAdd"}
 				Blend One One
 				CGPROGRAM
@@ -209,8 +220,10 @@
 				ENDCG
 			}
 
-				Pass
+			//Reflection
+			Pass
 			{
+				Name "Reflective"
 				Tags { "Queue" = "Transparent" }
 				Blend One One
 				CGPROGRAM
@@ -319,6 +332,82 @@
 				}
 				ENDCG
 			}
+
+			//UV Light
+			Pass
+			{
+				Name "UV Light"
+				Tags {"Queue" = "Transparent"}
+				Blend One One
+				CGPROGRAM
+				#pragma vertex vert
+				#pragma fragment frag
+				#pragma multi_compile_fwdbase
+				#pragma fragmentoption ARB_precision_hint_fastest
+				#include "UnityCG.cginc"
+				#include "AutoLight.cginc"
+				#include "Lighting.cginc"
+
+
+				sampler2D _MainTex;
+				sampler2D _UVTexture;
+				float4 _MainTex_ST;
+				fixed4 _UVColor;
+				fixed4 _UVLightColor;
+
+
+
+				struct appdata
+				{
+					float4 vertex : POSITION;
+					float2 uv : TEXCOORD0;
+					float3 normal : NORMAL;
+				};
+
+				struct v2f
+				{
+					float2 uv : TEXCOORD0;
+					float4 pos : SV_POSITION;
+					half3 posWorld : TEXCOORD1;
+					half3 worldNormal : TEXCOORD2;
+					LIGHTING_COORDS(3, 4)
+				};
+
+
+				v2f vert(appdata v)
+				{
+					v2f o;
+					float3 normalDirection = normalize(mul(float4(v.normal, 0.0), unity_WorldToObject).xyz);
+					half3 worldNormal = UnityObjectToWorldNormal(v.normal);
+					o.posWorld = mul(unity_ObjectToWorld, v.vertex);
+					o.pos = UnityObjectToClipPos(v.vertex);
+					o.worldNormal = normalDirection;
+					o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+					TRANSFER_VERTEX_TO_FRAGMENT(o)
+
+
+
+
+
+					return o;
+				}
+
+				fixed4 frag(v2f i) : SV_Target
+				{
+					fixed4 tex = tex2D(_UVTexture, i.uv);
+
+					fixed4 finalCol = fixed4(0,0,0,0);
+					if (_LightColor0.r == _UVLightColor.r && _LightColor0.g == _UVLightColor.g && _LightColor0.b == _UVLightColor.b)
+					{
+						finalCol = tex * _UVColor;
+					}
+
+					return finalCol;
+				}
+				ENDCG
+			}
+
+			//Shadows
 			Pass
 			{
 				Name "ShadowCaster"

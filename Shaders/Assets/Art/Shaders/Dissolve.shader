@@ -16,6 +16,7 @@
 		SubShader
 		{
 
+			//Light Base
 			Pass
 			{
 				Tags {"LightMode" = "ForwardBase" }
@@ -128,6 +129,7 @@
 				ENDCG
 			}
 
+			//Light Add
 			Pass
 			{
 				Tags {"LightMode" = "ForwardAdd"}
@@ -243,6 +245,7 @@
 				ENDCG
 			}
 
+			//Shadow
 			Pass
 			{
 				Name "ShadowCaster"
