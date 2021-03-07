@@ -13,7 +13,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2450
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
   m_SavedProperties:
@@ -62,23 +62,24 @@ Material:
     m_Floats:
     - _BumpScale: 1
     - _Cutoff: 0.5
-    - _DepthScale: 3
+    - _DepthScale: 1.7
     - _DepthScrollSpeedX: -0.1
     - _DepthScrollSpeedZ: -0.05
     - _DepthTexScale: 1
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _GlossMapScale: 1
-    - _Glossiness: 0.5
+    - _Glossiness: 10
     - _GlossyReflections: 1
     - _Height: 1
+    - _IntersectAmount: -42.46
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _RimPow: 0.18
+    - _RimPow: -0.4
     - _Scale: 1
-    - _Shine: 0.55
+    - _Shine: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _Speed: 1
@@ -86,7 +87,7 @@ Material:
     - _UVSec: 0
     - _WaveHeight: 0.2
     - _WaveIntensity: 0.2
-    - _WaveSpeedX: 1
+    - _WaveSpeedX: 0.8
     - _WaveSpeedZ: 0.4
     - _Width: 1
     - _XSpeed: 0
@@ -97,6 +98,8 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _MainCol: {r: 0, g: 0.24006061, b: 0.5377358, a: 0.6509804}
+    - _IntersectCol: {r: 1, g: 0, b: 0, a: 1}
+    - _MainCol: {r: 0.31941974, g: 0.48803508, b: 0.6981132, a: 0.87058824}
     - _RimCol: {r: 1, g: 1, b: 1, a: 1}
     - _ShineCol: {r: 1, g: 1, b: 1, a: 1}
+    - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}

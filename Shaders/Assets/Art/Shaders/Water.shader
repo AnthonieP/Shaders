@@ -8,6 +8,8 @@
 		_ShineCol("Shine Color", Color) = (1,1,1,1)
 		_RimPow("Rim", float) = 1
 		_RimCol("Rim Color", Color) = (1,1,1,1)
+		_SpecularColor("Specular Color", Color) = (1.0, 1.0, 1.0, 1.0)
+		_Glossiness("Glossiness", float) = 10
 
 		//Water
 		_WaveSpeedX("Wave Speed X", float) = 0
@@ -17,9 +19,16 @@
 		_DepthScrollSpeedX("Depth Texture Scroll Speed X", float) = 0
 		_DepthScrollSpeedZ("Depth Texture Scroll Speed Z", float) = 0
 		_DepthScale("Depth Texture Scale", float) = 1
+		_IntersectCol("Intersect Color", Color) = (1,1,1,1)
+		_IntersectAmount("Intersect Amount", float) = 1
 	}
 		SubShader
 		{
+			Tags
+			{
+				"RenderType" = "Transparent"
+				"Queue" = "Transparent"
+			}
 			//LightBase
 			Pass
 			{
@@ -27,8 +36,8 @@
 				Blend SrcAlpha OneMinusSrcAlpha
 				ZWrite Off
 				Cull Off
-				LOD 100
 				CGPROGRAM
+				#pragma target 3.0
 				#pragma vertex vert
 				#pragma fragment frag
 				#pragma multi_compile_fwdbase
@@ -40,18 +49,23 @@
 
 				sampler2D _MainTex;
 				sampler2D _DepthTex;
+				sampler2D _CameraDepthTexture;
 				float4 _MainTex_ST;
 				fixed4 _MainCol;
 				half _Shine;
 				fixed4 _ShineCol;
 				half _RimPow;
 				fixed4 _RimCol;
-				float _WaveSpeedX;
-				float _WaveSpeedZ;
-				float _WaveHeight;
-				float _DepthScrollSpeedX;
-				float _DepthScrollSpeedZ;
-				float _DepthScale;
+				half _Glossiness;
+				fixed4 _SpecularColor;
+				half _WaveSpeedX;
+				half _WaveSpeedZ;
+				half _WaveHeight;
+				half _DepthScrollSpeedX;
+				half _DepthScrollSpeedZ;
+				half _DepthScale;
+				fixed3 _IntersectCol;
+				half _IntersectAmound;
 
 
 
@@ -68,7 +82,11 @@
 					float4 pos : SV_POSITION;
 					half3 posWorld : TEXCOORD1;
 					half3 worldNormal : TEXCOORD2;
-					LIGHTING_COORDS(3, 4)
+					float2 screenuv : TEXCOORD3;
+					float depth : DEPTH;
+					float3 normal : NORMAL;
+					LIGHTING_COORDS(4, 5)
+
 				};
 
 
@@ -76,15 +94,20 @@
 				{
 					v2f o;
 
-					v.vertex.y += sin((v.vertex.x * _WaveSpeedX + _Time[1]) + (v.vertex.z * _WaveSpeedZ + _Time[1])) * _WaveHeight;
+					float3 worldPos = unity_ObjectToWorld._m03_m13_m23;
+					v.vertex.y += sin(((v.vertex.x + worldPos.x) * _WaveSpeedX + _Time[1]) + ((v.vertex.z + worldPos.z) * _WaveSpeedZ + _Time[1])) * _WaveHeight;
 
 					float3 normalDirection = normalize(mul(float4(v.normal, 0.0), unity_WorldToObject).xyz);
 					half3 worldNormal = UnityObjectToWorldNormal(v.normal);
 
 					o.posWorld = mul(unity_ObjectToWorld, v.vertex);
 					o.pos = UnityObjectToClipPos(v.vertex);
+					o.normal = UnityObjectToWorldNormal(v.normal);
 					o.worldNormal = normalDirection;
 					o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+					o.screenuv = ((o.pos.xy / o.pos.w) + 1) / 2;
+					o.screenuv.y = 1 - o.screenuv.y;
+					o.depth = -UnityObjectToViewPos(v.vertex).z * _ProjectionParams.w;
 					TRANSFER_VERTEX_TO_FRAGMENT(o)
 
 
@@ -95,17 +118,18 @@
 
 				fixed4 frag(v2f i) : SV_Target
 				{
-					// sample the texture
 					fixed4 tex = tex2D(_MainTex, i.uv);
-					fixed2 roundedDepthScroll = fixed2(round((i.uv.x * _DepthScale + _Time[1] * _DepthScrollSpeedX) - .5), round((i.uv.y * _DepthScale + _Time[1] * _DepthScrollSpeedZ) - .5));
-					fixed2 depthScroll = fixed2((i.uv.x * _DepthScale + _Time[1] * _DepthScrollSpeedX) - roundedDepthScroll.x, (i.uv.y * _DepthScale + _Time[1] * _DepthScrollSpeedZ) - roundedDepthScroll.y);
+					float3 worldPos = unity_ObjectToWorld._m03_m13_m23;
+					fixed2 roundedDepthScroll = fixed2(round(((i.uv.x + worldPos.x) * _DepthScale + _Time[1] * _DepthScrollSpeedX) - .5), round(((i.uv.y + worldPos.z) * _DepthScale + _Time[1] * _DepthScrollSpeedZ) - .5));
+					fixed2 depthScroll = fixed2(((i.uv.x + worldPos.x) * _DepthScale + _Time[1] * _DepthScrollSpeedX) - roundedDepthScroll.x, ((i.uv.y + worldPos.z) * _DepthScale + _Time[1] * _DepthScrollSpeedZ) - roundedDepthScroll.y);
 					fixed4 depthTex = tex2D(_DepthTex, depthScroll);
 					i.worldNormal.y *= ((depthTex.x + 1) * .5);
 					float3 lightDirection;
 					float atten;
 					float shadowAtten = LIGHT_ATTENUATION(i);
 					float3 normalDirection = i.worldNormal;
-					float3 viewDirection = normalize(_WorldSpaceLightPos0.xyz - i.posWorld.xyz);
+					//float3 viewDirection = normalize(_WorldSpaceLightPos0.xyz - i.posWorld.xyz);
+					float3 viewDirection = normalize(_WorldSpaceCameraPos - mul(unity_ObjectToWorld, float4(0.0, 0.0, 0.0, 1.0))).xyz;
 					float4 col = float4(0, 0, 0, 0);
 					if (_WorldSpaceLightPos0.w == 0) {
 						//DirectionalLight
@@ -126,9 +150,23 @@
 
 					float3 lightFinal = rimLighting + diffuseReflection + specularReflection + UNITY_LIGHTMODEL_AMBIENT.rgb;
 					col = half4(lightFinal.xyz, 1);
-					fixed4 finalCol = tex * col * _MainCol * shadowAtten;
-					
 
+					float3 reflectionDirection = normalize(_WorldSpaceCameraPos.xyz + (i.pos.xyz + mul(unity_ObjectToWorld, float4(0.0, 0.0, 0.0, 1.0))).xyz);
+
+					fixed4 finalCol = tex * col * _MainCol * shadowAtten;
+					//finalCol = float4(reflectionDirection.x, reflectionDirection.x, reflectionDirection.x, 1);
+					//finalCol = shadowAtten;
+
+					float screenDepth = Linear01Depth(tex2D(_CameraDepthTexture, i.screenuv));
+					float diff = screenDepth - i.depth;
+					float intersect = 0;
+
+					if (diff > 0) 
+						intersect = 1 - smoothstep(0, _ProjectionParams.w * _IntersectAmound, diff);
+
+					fixed4 glowColor = fixed4(lerp(_MainCol.rgb, _IntersectCol, pow(intersect, 4)), 1);
+					finalCol = _MainCol * _MainCol.a + glowColor;
+					finalCol.a = _MainCol.a;
 					return finalCol;
 				}
 				ENDCG
@@ -237,7 +275,8 @@
 			Pass
 			{
 				Name "ShadowCaster"
-				Tags { "LightMode" = "ShadowCaster" }
+				Tags { "LightMode" = "ShadowCaster"}
+				Blend SrcAlpha OneMinusSrcAlpha
 
 				ZWrite On ZTest Less Cull Off
 
@@ -254,6 +293,7 @@
 				float _WaveSpeedZ;
 				float _WaveHeight;
 
+
 				struct v2f
 				{
 					V2F_SHADOW_CASTER;
@@ -265,7 +305,8 @@
 				{
 					v2f o;
 
-					v.vertex.y += sin((v.vertex.x * _WaveSpeedX + _Time[1]) + (v.vertex.z * _WaveSpeedZ + _Time[1])) * _WaveHeight;
+					float3 worldPos = unity_ObjectToWorld._m03_m13_m23;
+					v.vertex.y += sin(((v.vertex.x + worldPos.x) * _WaveSpeedX + _Time[1]) + ((v.vertex.z + worldPos.z) * _WaveSpeedZ + _Time[1])) * _WaveHeight;
 
 					o.uv = v.texcoord;
 					TRANSFER_SHADOW_CASTER(o)
@@ -276,12 +317,14 @@
 				float4 frag(v2f i) : COLOR
 				{
 					fixed4 c = tex2D(_MainTex, i.uv);
+					
+
 					SHADOW_CASTER_FRAGMENT(i)
 				}
 				ENDCG
 			}
 
-
+			
 
 		}
 		Fallback "diffuse"
