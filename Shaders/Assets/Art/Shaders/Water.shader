@@ -24,11 +24,7 @@
 	}
 		SubShader
 		{
-			Tags
-			{
-				"RenderType" = "Transparent"
-				"Queue" = "Transparent"
-			}
+			
 			//LightBase
 			Pass
 			{
@@ -65,7 +61,7 @@
 				half _DepthScrollSpeedZ;
 				half _DepthScale;
 				fixed3 _IntersectCol;
-				half _IntersectAmound;
+				float _IntersectAmound;
 
 
 
@@ -79,10 +75,10 @@
 				struct v2f
 				{
 					float2 uv : TEXCOORD0;
+					float2 screenuv : TEXCOORD1;
 					float4 pos : SV_POSITION;
-					half3 posWorld : TEXCOORD1;
 					half3 worldNormal : TEXCOORD2;
-					float2 screenuv : TEXCOORD3;
+					half3 posWorld : TEXCOORD3;
 					float depth : DEPTH;
 					float3 normal : NORMAL;
 					LIGHTING_COORDS(4, 5)
@@ -105,10 +101,10 @@
 					o.normal = UnityObjectToWorldNormal(v.normal);
 					o.worldNormal = normalDirection;
 					o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+					TRANSFER_VERTEX_TO_FRAGMENT(o)
 					o.screenuv = ((o.pos.xy / o.pos.w) + 1) / 2;
 					o.screenuv.y = 1 - o.screenuv.y;
 					o.depth = -UnityObjectToViewPos(v.vertex).z * _ProjectionParams.w;
-					TRANSFER_VERTEX_TO_FRAGMENT(o)
 
 
 
@@ -161,19 +157,20 @@
 					float diff = screenDepth - i.depth;
 					float intersect = 0;
 
-					if (diff > 0) 
+					if (diff > 0)
 						intersect = 1 - smoothstep(0, _ProjectionParams.w * _IntersectAmound, diff);
 
-					fixed4 glowColor = fixed4(lerp(_MainCol.rgb, _IntersectCol, pow(intersect, 4)), 1);
-					finalCol = _MainCol * _MainCol.a + glowColor;
-					finalCol.a = _MainCol.a;
-					return finalCol;
+					fixed4 glowColor = fixed4(lerp(finalCol.xyz, _IntersectCol, pow(intersect, 4)), 1);
+
+					col = finalCol * finalCol.a + glowColor;
+					col.a = finalCol.a;
+					return col;
 				}
 				ENDCG
 			}
 
 			//Light Add
-			Pass
+			/*Pass
 			{
 				Tags {"LightMode" = "ForwardAdd"}
 				Blend One One
@@ -270,7 +267,7 @@
 				}
 				ENDCG
 			}
-
+			
 			//Shadow
 			Pass
 			{
@@ -323,9 +320,8 @@
 				}
 				ENDCG
 			}
-
+			*/
 			
 
 		}
-		Fallback "diffuse"
 }
