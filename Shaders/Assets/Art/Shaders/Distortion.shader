@@ -8,6 +8,12 @@
     SubShader
     {
 
+
+		GrabPass
+		{
+			"_GrabTexture"
+		}
+
         Pass
         {
 			Tags { "RenderType"="Transparent" }
@@ -21,6 +27,7 @@
             #include "UnityCG.cginc"
 
             sampler2D _MainTex;
+			sampler2D _GrabTexture;
             float4 _MainTex_ST;
 			fixed4 _MainCol;
 
@@ -28,12 +35,15 @@
             {
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
+				float3 normal : NORMAL;
             };
 
             struct v2f
             {
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
+                float4 screenPos : TEXCOORD1;
+				float3 normal : TEXCOORD2;
             };
 
 
@@ -42,19 +52,41 @@
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+				o.screenPos = ComputeGrabScreenPos(o.vertex);
+				o.normal = UnityObjectToWorldNormal(v.normal);
                 return o;
             }
 
 			fixed4 frag(v2f i) : COLOR
 			{
-				fixed2 tempUV = ComputeGrabScreenPos(i.vertex);
-				tempUV *= 0;
+				float3 vNormalTs = UnpackScaleNormal( tex2D( _BumpMap, i.vTexCoord0.xy ), 1 );
 
-                fixed4 col = tex2D(_MainTex, tempUV);
+					// Tangent space -> World space
+					float3 vNormalWs = Vec3TsToWsNormalized( vNormalTs.xyz, i.vNormalWs.xyz, i.vTangentUWs.xyz, i.vTangentVWs.xyz );
 
-				
-				fixed4 finalCol = col * _MainCol;
-                return finalCol;
+					// World space -> View space
+					float3 vNormalVs = normalize(mul((float3x3)UNITY_MATRIX_V, vNormalWs));
+
+					// Calculate offset
+					float2 offset = vNormalVs.xy * _Refraction;
+					offset *= pow(length(vNormalVs.xy), _Power);
+
+					// Scale to pixel size
+					offset /= float2(_ScreenParams.x, _ScreenParams.y);
+
+					// Scale with screen depth
+					offset /=  i.vPos.z;
+
+					// Scale with vertex alpha
+					offset *= pow(i.vColor.a, _AlphaPower);
+
+					// Sample grab texture
+					float4 vDistortColor = tex2Dproj(_GrabTexture, i.vGrabPos + float4(offset, 0.0, 0.0));
+
+					// Debug normals
+					// return float4(vNormalVs * 0.5 + 0.5, 1);
+
+					return vDistortColor;
             }
             ENDCG
         }
