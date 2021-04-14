@@ -50,9 +50,11 @@
 
 			fixed4 frag(v2f i) : SV_Target
 			{
-				fixed roundedXPos = round(i.vertex.x / _TexScale - 0.5);
-				fixed roundedYPos = round(i.vertex.y / _TexScale - 0.5);
-				fixed2 uvCoords = fixed2(i.vertex.x / _TexScale - roundedXPos, i.vertex.y / _TexScale - roundedYPos);
+				float posX = (i.posWorld.x * i.vertex.x);
+				float posY = (i.posWorld.y * i.vertex.y);
+				fixed roundedXPos = round(posX / _TexScale - 0.5);
+				fixed roundedYPos = round(posY / _TexScale - 0.5);
+				fixed2 uvCoords = fixed2(posX / _TexScale - roundedXPos, posY / _TexScale - roundedYPos);
                 fixed4 col = tex2D(_MainTex, uvCoords);
                 //fixed4 col = tex2D(_MainTex, i.uv);
 
