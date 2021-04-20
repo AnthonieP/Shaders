@@ -59,7 +59,7 @@
 
 			fixed4 frag(v2f i) : COLOR
 			{
-				float3 vNormalTs = UnpackScaleNormal( tex2D( _BumpMap, i.vTexCoord0.xy ), 1 );
+				/*float3 vNormalTs = UnpackScaleNormal( tex2D( _BumpMap, i.vTexCoord0.xy ), 1 );
 
 					// Tangent space -> World space
 					float3 vNormalWs = Vec3TsToWsNormalized( vNormalTs.xyz, i.vNormalWs.xyz, i.vTangentUWs.xyz, i.vTangentVWs.xyz );
@@ -86,7 +86,9 @@
 					// Debug normals
 					// return float4(vNormalVs * 0.5 + 0.5, 1);
 
-					return vDistortColor;
+					return vDistortColor;*/
+
+				return fixed4(1,1,1,1);
             }
             ENDCG
         }
