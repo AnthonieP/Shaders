@@ -7,10 +7,6 @@
 		_LightTex("Light Gradient", 2D) = "white" {}
 		_OutlineCol("Outline Color", Color) = (1,1,1,1)
 		_OutlineWidth("Outline With", float) = 0
-		_Shine("Shine", float) = 1
-		_ShineCol("Shine Color", Color) = (1,1,1,1)
-		_RimPow("Rim", float) = 1
-		_RimCol("Shine Color", Color) = (1,1,1,1)
 	}
 		SubShader
 		{
@@ -33,10 +29,6 @@
 				float4 _MainTex_ST;
 				sampler2D _LightTex;
 				fixed4 _MainCol;
-				half _Shine;
-				fixed4 _ShineCol;
-				half _RimPow;
-				fixed4 _RimCol;
 
 
 
@@ -66,7 +58,7 @@
 					o.pos = UnityObjectToClipPos(v.vertex);
 					o.worldNormal = normalDirection;
 					o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-					//TRANSFER_VERTEX_TO_FRAGMENT(o)
+					TRANSFER_VERTEX_TO_FRAGMENT(o)
 
 
 
@@ -79,8 +71,8 @@
 					fixed4 tex = tex2D(_MainTex, i.uv);
 					float3 lightDirection;
 					float atten;
+					float shadowAtten = LIGHT_ATTENUATION(i);
 					float3 normalDirection = i.worldNormal;
-					float3 viewDirection = normalize(_WorldSpaceLightPos0.xyz - i.posWorld.xyz);
 					float4 col = float4(0, 0, 0, 0);
 					if (_WorldSpaceLightPos0.w == 0) {
 						//DirectionalLight
@@ -94,10 +86,9 @@
 						atten = 1 / distance;
 						lightDirection = normalize(fragmentToLightSource);
 					}
-
-					col = tex2D(_LightTex, float2(0.99 - saturate(dot(normalDirection, lightDirection)) * 0.98, 0));
-
-
+					float tempLight = saturate(dot(normalDirection, lightDirection)) * shadowAtten;
+					tempLight *= .7;
+					col = tex2D(_LightTex, float2((0.99 - tempLight) * 0.98, .5));
 
 					return tex * col * _MainCol;
 				}
@@ -123,11 +114,6 @@
 				sampler2D _LightTex;
 				fixed4 _MainCol;
 				fixed4 _OutlineCol;
-				half _Shine;
-				fixed4 _ShineCol;
-				half _RimPow;
-				fixed4 _RimCol;
-
 
 
 				struct appdata
@@ -167,12 +153,11 @@
 
 				fixed4 frag(v2f i) : SV_Target
 				{
-					// sample the texture
 					fixed4 tex = tex2D(_MainTex, i.uv);
 					float3 lightDirection;
 					float atten;
+					float shadowAtten = LIGHT_ATTENUATION(i);
 					float3 normalDirection = i.worldNormal;
-					float3 viewDirection = normalize(_WorldSpaceLightPos0.xyz - i.posWorld.xyz);
 					float4 col = float4(0, 0, 0, 0);
 					if (_WorldSpaceLightPos0.w == 0) {
 						//DirectionalLight
@@ -186,9 +171,9 @@
 						atten = 1 / distance;
 						lightDirection = normalize(fragmentToLightSource);
 					}
-
-					col = tex2D(_LightTex, float2(0.99 - saturate(dot(normalDirection, lightDirection)) * 0.98, 0));
-
+					float tempLight = saturate(dot(normalDirection, lightDirection)) * shadowAtten;
+					tempLight *= .7;
+					col = tex2D(_LightTex, float2((0.99 - tempLight) * 0.98, .5));
 
 					return tex * col * _MainCol;
 				}

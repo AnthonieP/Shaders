@@ -6,6 +6,7 @@
 		_StarTex("Star Texture", 2D) = "clear" {}
         _StarBrightness ("Star Brightness", float) = 1
         _TexScale ("Texture Scale", float) = 1
+        _CamMoveEffect ("Camera move effect", float) = 1
     }
     SubShader
     {
@@ -23,6 +24,7 @@
             sampler2D _StarTex;
 			float4 _MainTex_ST;
 			float _TexScale;
+			float _CamMoveEffect;
 			float _StarBrightness;
 
 
@@ -37,7 +39,8 @@
             {
 				float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
-				half3 posWorld : TEXCOORD1;
+				float4 posWorld : TEXCOORD1;
+				float3 viewDir : TEXCOORD2;
             };
 
 
@@ -47,13 +50,17 @@
                 o.vertex = UnityObjectToClipPos(v.vertex);
 				o.posWorld = mul(unity_ObjectToWorld, v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+				o.viewDir = WorldSpaceViewDir(v.vertex);
                 return o;
             }
 
 			fixed4 frag(v2f i) : SV_Target
 			{
-				float posX = (i.vertex.x);
-				float posY = (i.vertex.y);
+				float3 viewDir = i.viewDir.xyz;
+				float3 vertex = i.vertex.xyz;
+				
+				float posX = vertex.z + (viewDir.x * _CamMoveEffect);
+				float posY = vertex.x + (viewDir.y * _CamMoveEffect);
 				fixed roundedXPos = round(posX / _TexScale - 0.5);
 				fixed roundedYPos = round(posY / _TexScale - 0.5);
 				fixed2 uvCoords = fixed2(posX / _TexScale - roundedXPos, posY / _TexScale - roundedYPos);

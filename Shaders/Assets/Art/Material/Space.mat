@@ -61,6 +61,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _BumpScale: 1
+    - _CamMoveEffect: 4000
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
@@ -76,7 +77,7 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _StarBrightness: 16
-    - _TexScale: 1000
+    - _TexScale: 200000
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
