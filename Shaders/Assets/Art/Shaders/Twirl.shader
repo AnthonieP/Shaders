@@ -6,6 +6,8 @@
         [HDR] _MainCol ("Twirl Color", color) = (1,1,1,1)
 		_TwirlAngle ("Twirl Angle", float) = 0
 		_TwirlSpeed ("Twirl Speed", float) = 0
+		_AlphaAdd ("Alpha Add", Range(0.0, 1.0)) = 0
+        _FadeTex ("Texture", 2D) = "white" {}
     }
     SubShader
     {
@@ -24,10 +26,12 @@
             #include "UnityCG.cginc"
 
             sampler2D _MainTex;
+            sampler2D _FadeTex;
             float4 _MainTex_ST;
             fixed4 _MainCol;
 			float _TwirlAngle;
 			float _TwirlSpeed;
+			fixed _AlphaAdd;
 
             struct appdata
             {
@@ -61,8 +65,11 @@
 				fixed4 finalCol = _MainCol;
                 fixed4 col = tex2D(_MainTex, float2(twirl.x, twirl.y));
 
+				fixed4 fadeTex = tex2D(_FadeTex, i.uv);
 
 				finalCol.a = col.x;
+				finalCol.a = min(1, finalCol.a + _AlphaAdd);
+				finalCol.a *= fadeTex.x;
                 return finalCol;
             }
             ENDCG
