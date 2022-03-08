@@ -68,7 +68,9 @@ Material:
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _RimPow: 1.77
-    - _RippleFrequency: 1.3
+    - _RippleFalloff: 2.5
+    - _RippleFalloffMaxMultiplier: 1.2
+    - _RippleFrequency: 2
     - _RippleHeight: 0.5
     - _RippleSpeed: 2
     - _Shine: 3.07

@@ -8,10 +8,11 @@
 		_ShineCol("Shine Color", Color) = (1,1,1,1)
 		_RimPow("Rim", float) = 1
 		_RimCol("Rim Color", Color) = (1,1,1,1)
-		_RippleOrigin("Ripple Origin", Vector) = (0,0,0)
 		_RippleFrequency("Ripple Frequency", float) = 0
 		_RippleSpeed("Ripple Speed", float) = 0
 		_RippleHeight("Ripple Height", float) = 1
+		_RippleFalloff("Ripple Falloff", float) = 1
+		_RippleFalloffMaxMultiplier("Ripple Falloff Max Multiplier", float) = 1
 	}
 		SubShader
 		{
@@ -37,10 +38,13 @@
 				fixed4 _ShineCol;
 				half _RimPow;
 				fixed4 _RimCol;
-				float3 _RippleOrigin;
+				int _RippleOriginCount;
+				float3 _RippleOrigin[1000];
 				half _RippleFrequency;
 				half _RippleSpeed;
 				half _RippleHeight;
+				half _RippleFalloff;
+				half _RippleFalloffMaxMultiplier;
 
 
 
@@ -66,32 +70,31 @@
 					v2f o;
 					float3 worldPos = unity_ObjectToWorld._m03_m13_m23;
 
-					//Do Ripple
-					float tempXVert = v.vertex.x;
-					float tempZVert = v.vertex.z;
-					if (tempXVert < 0) {
-						tempXVert *= 1;
-					}
-					if (tempZVert < 0) {
-						tempZVert *= 1;
+					
+
+					for (int i = 0; i < _RippleOriginCount; i++)
+					{
+						//Do Ripple
+						float tempXVert = v.vertex.x;
+						float tempZVert = v.vertex.z;
+						if (tempXVert < 0) {
+							tempXVert *= 1;
+						}
+						if (tempZVert < 0) {
+							tempZVert *= 1;
+						}
+						float3 origin = _RippleOrigin[i];
+
+						float vertexDis = distance(float3(origin.x, 0, origin.z), float3(tempXVert, 0, tempZVert));
+						float fallOff = _RippleFalloff / vertexDis;
+						fallOff = min(_RippleFalloffMaxMultiplier, fallOff);
+						fallOff = max(fallOff, 0);
+
+						v.vertex.y += sin((vertexDis)*_RippleFrequency + (-_Time[1] * _RippleSpeed)) * _RippleHeight * fallOff;
 					}
 
-					float vertexDis = distance(float3(_RippleOrigin.x, 0, _RippleOrigin.z), float3(tempXVert, 0, tempZVert));
 
-					//xDir
-					if (v.vertex.x >= 0) {
-						v.vertex.y += sin((vertexDis)*_RippleFrequency + (-_Time[1] * _RippleSpeed)) * _RippleHeight;
-					}
-					if (v.vertex.x < 0) {
-						v.vertex.y += sin((vertexDis)*_RippleFrequency + (-_Time[1] * _RippleSpeed)) * _RippleHeight;
-					}
-					//yDir
-					if (v.vertex.z >= 0) {
-						v.vertex.y += sin((vertexDis)*_RippleFrequency + (-_Time[1] * _RippleSpeed)) * _RippleHeight;
-					}
-					if (v.vertex.z < 0) {
-						v.vertex.y += sin((vertexDis)*_RippleFrequency + (-_Time[1] * _RippleSpeed)) * _RippleHeight;
-					}
+					
 
 
 					float3 normalDirection = normalize(mul(float4(v.normal, 0.0), unity_WorldToObject).xyz);
@@ -245,7 +248,7 @@
 			}
 			*/
 
-
+			
 			//Shadow
 			Pass
 			{
@@ -264,10 +267,13 @@
 				#include "UnityCG.cginc"
 
 				sampler2D _MainTex;
-				float3 _RippleOrigin;
+				int _RippleOriginCount;
+				float3 _RippleOrigin[1000];
 				half _RippleFrequency;
 				half _RippleSpeed;
 				half _RippleHeight;
+				half _RippleFalloff;
+				half _RippleFalloffMaxMultiplier;
 
 				struct v2f
 				{
@@ -282,32 +288,30 @@
 
 					float3 worldPos = unity_ObjectToWorld._m03_m13_m23;
 
-					//Do Ripple
-					float tempXVert = v.vertex.x;
-					float tempZVert = v.vertex.z;
-					if (tempXVert < 0) {
-						tempXVert *= 1;
-					}
-					if (tempZVert < 0) {
-						tempZVert *= 1;
+					
+
+					for (int i = 0; i < _RippleOriginCount; i++)
+					{
+						//Do Ripple
+						float tempXVert = v.vertex.x;
+						float tempZVert = v.vertex.z;
+						if (tempXVert < 0) {
+							tempXVert *= 1;
+						}
+						if (tempZVert < 0) {
+							tempZVert *= 1;
+						}
+						float3 origin = _RippleOrigin[i];
+
+						float vertexDis = distance(float3(origin.x, 0, origin.z), float3(tempXVert, 0, tempZVert));
+						float fallOff = _RippleFalloff / vertexDis;
+						fallOff = min(_RippleFalloffMaxMultiplier, fallOff);
+						fallOff = max(fallOff, 0);
+
+						v.vertex.y += sin((vertexDis)*_RippleFrequency + (-_Time[1] * _RippleSpeed)) * _RippleHeight * fallOff;
 					}
 
-					float vertexDis = distance(float3(_RippleOrigin.x, 0, _RippleOrigin.z), float3(tempXVert, 0, tempZVert));
 
-					//xDir
-					if (v.vertex.x >= 0) {
-						v.vertex.y += sin((vertexDis)*_RippleFrequency + (-_Time[1] * _RippleSpeed)) * _RippleHeight;
-					}
-					if (v.vertex.x < 0) {
-						v.vertex.y += sin((vertexDis)*_RippleFrequency + (-_Time[1] * _RippleSpeed)) * _RippleHeight;
-					}
-					//yDir
-					if (v.vertex.z >= 0) {
-						v.vertex.y += sin((vertexDis)*_RippleFrequency + (-_Time[1] * _RippleSpeed)) * _RippleHeight;
-					}
-					if (v.vertex.z < 0) {
-						v.vertex.y += sin((vertexDis)*_RippleFrequency + (-_Time[1] * _RippleSpeed)) * _RippleHeight;
-					}
 
 					o.uv = v.texcoord;
 					TRANSFER_SHADOW_CASTER(o)
