@@ -72,7 +72,7 @@ Material:
     - _RippleFalloffMaxMultiplier: 1.2
     - _RippleFrequency: 2
     - _RippleHeight: 0.5
-    - _RippleSpeed: 2
+    - _RippleSpeed: 3
     - _Shine: 3.07
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1

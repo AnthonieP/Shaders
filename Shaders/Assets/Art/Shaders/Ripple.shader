@@ -8,9 +8,7 @@
 		_ShineCol("Shine Color", Color) = (1,1,1,1)
 		_RimPow("Rim", float) = 1
 		_RimCol("Rim Color", Color) = (1,1,1,1)
-		_RippleFrequency("Ripple Frequency", float) = 0
 		_RippleSpeed("Ripple Speed", float) = 0
-		_RippleHeight("Ripple Height", float) = 1
 		_RippleFalloff("Ripple Falloff", float) = 1
 		_RippleFalloffMaxMultiplier("Ripple Falloff Max Multiplier", float) = 1
 	}
@@ -40,9 +38,9 @@
 				fixed4 _RimCol;
 				int _RippleOriginCount;
 				float3 _RippleOrigin[1000];
-				half _RippleFrequency;
+				half _RippleFrequency[1000];
 				half _RippleSpeed;
-				half _RippleHeight;
+				half _RippleHeight[1000];
 				half _RippleFalloff;
 				half _RippleFalloffMaxMultiplier;
 
@@ -90,7 +88,7 @@
 						fallOff = min(_RippleFalloffMaxMultiplier, fallOff);
 						fallOff = max(fallOff, 0);
 
-						v.vertex.y += sin((vertexDis)*_RippleFrequency + (-_Time[1] * _RippleSpeed)) * _RippleHeight * fallOff;
+						v.vertex.y += sin((vertexDis)*_RippleFrequency[i] + (-_Time[1] * _RippleSpeed)) * _RippleHeight[i] * fallOff;
 					}
 
 
@@ -269,9 +267,9 @@
 				sampler2D _MainTex;
 				int _RippleOriginCount;
 				float3 _RippleOrigin[1000];
-				half _RippleFrequency;
+				half _RippleFrequency[1000];
 				half _RippleSpeed;
-				half _RippleHeight;
+				half _RippleHeight[1000];
 				half _RippleFalloff;
 				half _RippleFalloffMaxMultiplier;
 
@@ -308,7 +306,7 @@
 						fallOff = min(_RippleFalloffMaxMultiplier, fallOff);
 						fallOff = max(fallOff, 0);
 
-						v.vertex.y += sin((vertexDis)*_RippleFrequency + (-_Time[1] * _RippleSpeed)) * _RippleHeight * fallOff;
+						v.vertex.y += sin((vertexDis)*_RippleFrequency[i] + (-_Time[1] * _RippleSpeed)) * _RippleHeight[i] * fallOff;
 					}
 
 
