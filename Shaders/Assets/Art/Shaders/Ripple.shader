@@ -9,7 +9,6 @@
 		_RimPow("Rim", float) = 1
 		_RimCol("Rim Color", Color) = (1,1,1,1)
 		_RippleSpeed("Ripple Speed", float) = 0
-		_RippleFalloff("Ripple Falloff", float) = 1
 		_RippleFalloffMaxMultiplier("Ripple Falloff Max Multiplier", float) = 1
 	}
 		SubShader
@@ -41,7 +40,7 @@
 				half _RippleFrequency[1000];
 				half _RippleSpeed;
 				half _RippleHeight[1000];
-				half _RippleFalloff;
+				half _RippleFalloff[1000];
 				half _RippleFalloffMaxMultiplier;
 
 
@@ -84,7 +83,7 @@
 						float3 origin = _RippleOrigin[i];
 
 						float vertexDis = distance(float3(origin.x, 0, origin.z), float3(tempXVert, 0, tempZVert));
-						float fallOff = _RippleFalloff / vertexDis;
+						float fallOff = _RippleFalloff[i] / vertexDis;
 						fallOff = min(_RippleFalloffMaxMultiplier, fallOff);
 						fallOff = max(fallOff, 0);
 
@@ -270,7 +269,7 @@
 				half _RippleFrequency[1000];
 				half _RippleSpeed;
 				half _RippleHeight[1000];
-				half _RippleFalloff;
+				half _RippleFalloff[1000];
 				half _RippleFalloffMaxMultiplier;
 
 				struct v2f
@@ -302,7 +301,7 @@
 						float3 origin = _RippleOrigin[i];
 
 						float vertexDis = distance(float3(origin.x, 0, origin.z), float3(tempXVert, 0, tempZVert));
-						float fallOff = _RippleFalloff / vertexDis;
+						float fallOff = _RippleFalloff[i] / vertexDis;
 						fallOff = min(_RippleFalloffMaxMultiplier, fallOff);
 						fallOff = max(fallOff, 0);
 

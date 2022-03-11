@@ -28,9 +28,11 @@ public class RippleController : MonoBehaviour
         Vector4[] origins = new Vector4[arrayLimits];
         float[] frequencies = new float[arrayLimits];
         float[] heights = new float[arrayLimits];
+        float[] fallOffs = new float[arrayLimits];
         rippleRenderer.material.SetVectorArray("_RippleOrigin", origins);
         rippleRenderer.material.SetFloatArray("_RippleFrequency", frequencies);
         rippleRenderer.material.SetFloatArray("_RippleHeight", heights);
+        rippleRenderer.material.SetFloatArray("_RippleFalloff", fallOffs);
 
     }
 
@@ -70,11 +72,13 @@ public class RippleController : MonoBehaviour
             Vector4[] origins = new Vector4[ripples.Count];
             float[] frequencies = new float[ripples.Count];
             float[] heights = new float[ripples.Count];
+            float[] fallOffs = new float[ripples.Count];
             for (int i = 0; i < ripples.Count; i++)
             {
                 origins[i] = new Vector4(ripples[i].impactOrigins.x, 0, ripples[i].impactOrigins.z, 0);
                 frequencies[i] = ripples[i].rippleFrequency;
                 heights[i] = ripples[i].rippleHeight;
+                fallOffs[i] = ripples[i].rippleFalloff;
             }
 
 
@@ -83,6 +87,7 @@ public class RippleController : MonoBehaviour
             rippleRenderer.material.SetInt("_RippleOriginCount", ripples.Count);
             rippleRenderer.material.SetFloatArray("_RippleFrequency", frequencies);
             rippleRenderer.material.SetFloatArray("_RippleHeight", heights);
+            rippleRenderer.material.SetFloatArray("_RippleFalloff", fallOffs);
         }
     }
 
